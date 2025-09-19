@@ -11,28 +11,28 @@ export default class Chessboard {
 
                 const data = []
 
-                if(row + 1 >= 0 && row + 1 < length && column + 2 >= 0 && column + 2 < length) { // NE
+                if (row + 1 >= 0 && row + 1 < length && column + 2 >= 0 && column + 2 < length) { // NE
                     data.push([row + 1, column + 2])
                 }
-                if(row + 2 >= 0 && row + 2 < length && column + 1 >= 0 && column + 1 < length) { // NE
+                if (row + 2 >= 0 && row + 2 < length && column + 1 >= 0 && column + 1 < length) { // NE
                     data.push([row + 2, column + 1])
                 }
-                if(row - 1 >= 0 && row - 1 < length && column - 2 >= 0 && column - 2 < length) { // SW
+                if (row - 1 >= 0 && row - 1 < length && column - 2 >= 0 && column - 2 < length) { // SW
                     data.push([row - 1, column - 2])
                 }
-                if(row - 2 >= 0 && row - 2 < length && column - 1 >= 0 && column - 1 < length) { // SW
+                if (row - 2 >= 0 && row - 2 < length && column - 1 >= 0 && column - 1 < length) { // SW
                     data.push([row - 2, column - 1])
                 }
-                if(row + 1 >= 0 && row + 1 < length && column - 2 >= 0 && column - 2 < length) { // SE
+                if (row + 1 >= 0 && row + 1 < length && column - 2 >= 0 && column - 2 < length) { // SE
                     data.push([row + 1, column - 2])
                 }
-                if(row + 2 >= 0 && row + 2 < length && column - 1 >= 0 && column - 1 < length) { // SE
+                if (row + 2 >= 0 && row + 2 < length && column - 1 >= 0 && column - 1 < length) { // SE
                     data.push([row + 2, column - 1])
                 }
-                if(row - 1 >= 0 && row - 1 < length && column + 2 >= 0 && column + 2 < length) { // NW
+                if (row - 1 >= 0 && row - 1 < length && column + 2 >= 0 && column + 2 < length) { // NW
                     data.push([row - 1, column + 2])
                 }
-                if(row - 2 >= 0 && row - 2 < length && column + 1 >= 0 && column + 1 < length) { // NW
+                if (row - 2 >= 0 && row - 2 < length && column + 1 >= 0 && column + 1 < length) { // NW
                     data.push([row - 2, column + 1])
                 }
 
@@ -49,39 +49,48 @@ export default class Chessboard {
         })
     }
 
-    travel(start, end, queue = []) { // start and end must be arrays
-        if (queue.length === 0) {
-            if (typeof start !== 'object' && start.length !== 2 && typeof end !== 'object' && end.length !== 2) {
-                return new Error('Bad input!')
-            } else {
-                start = this.data[this.search[`${start[0]},${start[1]}`]]
-                end = this.data[this.search[`${end[0]},${end[1]}`]]
-            }
-
-            // let path = `[${start.x},${start.y}], `
-            queue.push(start)
+    travel(start, end) {
+        if (typeof start !== 'object' && typeof end !== 'object') {
+            if (start.length !== 2 && end.length !== 2)
+            return new Error('Bad input!')
         }
 
-        const nextQ = []
-        for (let i = 0; i < queue.length; i++) {{
-            if (queue[i].visited === false) {
-                console.log(queue[i])
+        start = this.data[this.search[`${start[0]},${start[1]}`]]
+        end = this.data[this.search[`${end[0]},${end[1]}`]]
 
-                queue[i].visited = true
+        // Reset visited state before each search
+        this.data.forEach((square) => {
+            square.visited = false
+        })
 
-                if (end === queue[i]) {
-                    // path += `[${adjacent.x},${adjacent.y}]`
-                    return
-                } else {
-                    queue[i].data.forEach((subAdj) => {
-                        if (subAdj.visited === false) {
-                            nextQ.push(subAdj)
-                        }
-                    })
+        const queue = [start]
+        const parent = {} // store how we reached each node
+        parent[`${start.x},${start.y}`] = null // starting square has no parent
+
+        while (queue.length > 0) {
+            const current = queue.shift()
+
+            current.visited = true
+
+            if (current === end) { // reconstruct path
+                let path = []
+                let node = current
+
+                while (node) {
+                    path.push([node.x, node.y]) // end first in path
+                    node = parent[`${node.x},${node.y}`] // **most important part to pay attention to -- parent object ends up containing many, many irrelevant nodes, but we want to trace parents back from the end/target therefore skipping those irrelevant nodes
+                }
+                return path.reverse().join(' ').toString() // reverse path, make printable
+            }
+
+            for (let adjacent of current.data) {
+                if (!adjacent.visited && !(`${adjacent.x},${adjacent.y}` in parent)) {
+                    parent[`${adjacent.x},${adjacent.y}`] = current
+                    queue.push(adjacent)
                 }
             }
-        }}
+        }
 
-        return this.travel(start, end, nextQ)
+        return new Error("Something went wrong!")
     }
 }

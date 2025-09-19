@@ -7,4 +7,4 @@ console.log('search', test.search)
 console.log('search 0,0', test.search['0,0'])
 console.log('search 7,7', test.search['7,7'])
 
-test.travel([0,0],[2,1])
+console.log(test.travel([0,0],[7,7]))
